@@ -1,14 +1,20 @@
 class ApplicationController < ActionController::Base
-  before_action :authenticate_user!, :authenticate_admin!
+
   protect_from_forgery with: :exception
+  before_action :authenticate_user!
+  before_action :authorize_admin!
   before_action :configure_permitted_parameters, if: :devise_controller?
-
-
 
   private
 
-  def authenticate_admin!
-  	current_user && current_user.admin?
+  def authorize_admin!
+    return true if user_signed_in? && current_user.admin?
+    sign_out_and_redirect(current_user) if current_user
+    false
+  end
+
+  def after_sign_in_path_for(resource)
+      users_path
   end
 
   def configure_permitted_parameters
